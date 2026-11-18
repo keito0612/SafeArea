@@ -1,8 +1,6 @@
 -- +migrate Up
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE disasters (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id BIGSERIAL PRIMARY KEY,
     type VARCHAR(20) NOT NULL,
     name VARCHAR(255) NOT NULL,
     year INTEGER NOT NULL,
@@ -20,7 +18,7 @@ CREATE INDEX idx_disasters_prefecture_code ON disasters(prefecture_code);
 
 -- コメント
 COMMENT ON TABLE disasters IS '過去の災害データ';
-COMMENT ON COLUMN disasters.id IS '主キー（UUID）';
+COMMENT ON COLUMN disasters.id IS '主キー（連番）';
 COMMENT ON COLUMN disasters.type IS '災害種別（earthquake/flood/tsunami/landslide/typhoon/other）';
 COMMENT ON COLUMN disasters.name IS '災害名';
 COMMENT ON COLUMN disasters.year IS '発生年';

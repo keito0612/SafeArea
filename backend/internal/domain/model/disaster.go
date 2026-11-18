@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // DisasterType は災害種別を表す
@@ -20,7 +18,7 @@ const (
 
 // Disaster は過去の災害データを表すエンティティ
 type Disaster struct {
-	ID             uuid.UUID    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID             int64        `gorm:"primaryKey;autoIncrement" json:"id"`
 	Type           DisasterType `gorm:"type:varchar(20);not null;index" json:"type"`
 	Name           string       `gorm:"type:varchar(255);not null" json:"name"`
 	Year           int          `gorm:"not null;index" json:"year"`
