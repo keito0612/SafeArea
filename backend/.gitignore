@@ -1,0 +1,22 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Binary
+bootstrap
+main
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Test
+coverage.out
+coverage.html
+
+# Vendor (if not committing)
+# vendor/

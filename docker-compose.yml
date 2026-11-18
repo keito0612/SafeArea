@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL データベース
+  db:
+    image: postgres:16-alpine
+    container_name: safearea-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: safearea
+      TZ: Asia/Tokyo
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - safearea-network
+
+  # バックエンド（Go）
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: safearea-backend
+    ports:
+      - "8080:8080"
+    environment:
+      ENV: local
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: safearea
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      GEOCODING_API_URL: https://msearch.gsi.go.jp/address-search/AddressSearch
+      JSHIS_API_URL: https://www.j-shis.bosai.go.jp/
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - safearea-network
+
+  # フロントエンド（Next.js）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: safearea-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_MAP_TILE_URL: https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - safearea-network
+
+volumes:
+  postgres_data:
+
+networks:
+  safearea-network:
+    driver: bridge

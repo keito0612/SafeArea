@@ -1,0 +1,20 @@
+# Dependencies
+vendor/
+
+# Build outputs
+tmp/
+bootstrap
+*.exe
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Test
+coverage.out
+
+# Docker
+docker-compose.yml
