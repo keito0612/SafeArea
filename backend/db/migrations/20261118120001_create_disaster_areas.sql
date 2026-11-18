@@ -2,7 +2,7 @@
 CREATE TABLE disaster_areas (
     id BIGSERIAL PRIMARY KEY,
     disaster_id BIGINT NOT NULL,
-    city_name VARCHAR(255) NOT NULL,
+    city_name VARCHAR(100) NOT NULL,
     damage_summary TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

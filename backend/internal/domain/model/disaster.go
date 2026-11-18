@@ -20,11 +20,11 @@ const (
 type Disaster struct {
 	ID             int64        `gorm:"primaryKey;autoIncrement" json:"id"`
 	Type           DisasterType `gorm:"type:varchar(20);not null;index" json:"type"`
-	Name           string       `gorm:"type:varchar(255);not null" json:"name"`
+	Name           string       `gorm:"type:varchar(100);not null" json:"name"`
 	Year           int          `gorm:"not null;index" json:"year"`
 	Damage         string       `gorm:"type:text" json:"damage"`
 	PrefectureCode string       `gorm:"type:varchar(2);not null;index" json:"prefecture_code"`
-	CityName       string       `gorm:"type:varchar(255)" json:"city_name"`
+	CityName       string       `gorm:"type:varchar(100)" json:"city_name"`
 	CreatedAt      time.Time    `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time    `gorm:"autoUpdateTime" json:"updated_at"`
 

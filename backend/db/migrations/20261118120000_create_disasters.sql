@@ -2,11 +2,11 @@
 CREATE TABLE disasters (
     id BIGSERIAL PRIMARY KEY,
     type VARCHAR(20) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
     year INTEGER NOT NULL,
     damage TEXT,
     prefecture_code VARCHAR(2) NOT NULL,
-    city_name VARCHAR(255),
+    city_name VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
