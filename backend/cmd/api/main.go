@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/cors"
 
 	"github.com/isobekeito/safearea/internal/controller"
+	"github.com/isobekeito/safearea/internal/infrastructure/persistence"
 )
 
 var chiLambda *chiadapter.ChiLambda
@@ -28,6 +29,11 @@ func init() {
 	// Logger setup
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+
+	// Database setup
+	if _, err := persistence.InitDB(); err != nil {
+		slog.Error("Failed to initialize database", "error", err)
+	}
 
 	// Router setup
 	r := newRouter()
