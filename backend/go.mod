@@ -1,6 +1,6 @@
 module github.com/isobekeito/safearea
 
-go 1.22
+go 1.23
 
 require (
 	// Lambda
@@ -10,17 +10,9 @@ require (
 	// Router
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
+)
 
-	// ORM
-	gorm.io/gorm v1.25.12
-	gorm.io/driver/postgres v1.5.9
-
-	// Validation
-	github.com/go-playground/validator/v10 v10.22.1
-
-	// UUID
-	github.com/google/uuid v1.6.0
-
-	// Environment (local development)
-	github.com/joho/godotenv v1.5.1
+require (
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 )

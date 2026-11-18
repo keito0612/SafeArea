@@ -1,5 +1,5 @@
 # Backend Dockerfile (Go)
-FROM golang:1.22-alpine
+FROM golang:1.23-alpine
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # Air（ホットリロード）をインストール
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@v1.52.3
 
 # go.modをコピーして依存関係をダウンロード
 COPY go.mod ./

@@ -18,6 +18,12 @@ import (
 
 var chiLambda *chiadapter.ChiLambda
 
+var routers = map[string]http.HandlerFunc{
+	"/health":    controller.HealthCheck,
+	"/risk":      controller.GetRisk,
+	"/disasters": controller.GetDisasters,
+}
+
 func init() {
 	// Logger setup
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -43,12 +49,8 @@ func newRouter() *chi.Mux {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
-
 	// Routes
-	r.Get("/api/health", controller.HealthCheck)
-	r.Get("/api/risk", controller.GetRisk)
-	r.Get("/api/disasters", controller.GetDisasters)
-
+	Route(r)
 	return r
 }
 
@@ -57,9 +59,12 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 	return chiLambda.ProxyWithContext(ctx, req)
 }
 
-
-func Route(){
-	
+func Route(r *chi.Mux) {
+	r.Route("/api", func(r chi.Router) {
+		for key, value := range routers {
+			r.Get(key, value)
+		}
+	})
 }
 
 func main() {

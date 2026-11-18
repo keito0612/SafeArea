@@ -6,7 +6,7 @@
 
 | 項目 | 内容 |
 |------|------|
-| 言語 | Go 1.22 |
+| 言語 | Go 1.23 |
 | ランタイム | AWS Lambda |
 | ルーター | chi |
 | ORM | GORM |
@@ -16,7 +16,7 @@
 
 ### 必要なもの
 
-- Go 1.22+
+- Go 1.23+
 - Docker / Docker Compose
 - make (任意)
 
