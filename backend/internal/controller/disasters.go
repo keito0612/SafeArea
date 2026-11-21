@@ -1,41 +1,49 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
+	"strings"
+
+	"github.com/isobekeito/safearea/internal/dto/response"
+	"github.com/isobekeito/safearea/internal/usecase"
 )
 
-type DisastersResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   *ErrorInfo  `json:"error,omitempty"`
+// DisastersController は災害履歴APIのコントローラー
+type DisastersController struct {
+	disasterHistoryUseCase usecase.DisasterHistoryUseCase
+}
+
+// NewDisastersController はDisastersControllerの新しいインスタンスを作成する
+func NewDisastersController(disasterHistoryUseCase usecase.DisasterHistoryUseCase) *DisastersController {
+	return &DisastersController{
+		disasterHistoryUseCase: disasterHistoryUseCase,
+	}
 }
 
 // GetDisasters は過去の災害履歴エンドポイント
-// GET /api/disasters?address=xxx
-func GetDisasters(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+// GET /api/search/disasters?address=xxx
+func (c *DisastersController) GetDisasters(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	address := r.URL.Query().Get("address")
+	address := strings.TrimSpace(r.URL.Query().Get("address"))
 	if address == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(DisastersResponse{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    "VALIDATION_ERROR",
-				Message: "addressパラメータは必須です",
-			},
+		response.WriteValidationError(w, []response.ErrorDetail{
+			{Field: "address", Message: "住所は必須です"},
 		})
 		return
 	}
 
-	// TODO: 実際の災害履歴検索ロジックを実装
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(DisastersResponse{
-		Success: true,
-		Data: map[string]interface{}{
-			"disasters": []interface{}{},
-			"message":   "Coming soon...",
-		},
-	})
+	result, err := c.disasterHistoryUseCase.GetDisasterHistory(ctx, address)
+	if err != nil {
+		if strings.Contains(err.Error(), "prefecture not found") {
+			response.WriteValidationError(w, []response.ErrorDetail{
+				{Field: "address", Message: "有効な都道府県が含まれていません"},
+			})
+			return
+		}
+		response.WriteInternalError(w)
+		return
+	}
+
+	response.WriteSuccess(w, result)
 }

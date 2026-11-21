@@ -1,47 +1,47 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
+	"strings"
+
+	"github.com/isobekeito/safearea/internal/dto/response"
+	"github.com/isobekeito/safearea/internal/usecase"
 )
 
-type RiskResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   *ErrorInfo  `json:"error,omitempty"`
+// SearchController は検索APIのコントローラー
+type SearchController struct {
+	searchUseCase usecase.SearchUseCase
 }
 
-type ErrorInfo struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+// NewSearchController はSearchControllerの新しいインスタンスを作成する
+func NewSearchController(searchUseCase usecase.SearchUseCase) *SearchController {
+	return &SearchController{
+		searchUseCase: searchUseCase,
+	}
 }
 
-// GetRisk は災害リスク検索エンドポイント
-// GET /api/risk?address=xxx
-func GetRisk(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+// Search は災害リスク検索エンドポイント
+// GET /api/search?address=xxx
+func (c *SearchController) Search(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	address := r.URL.Query().Get("address")
+	address := strings.TrimSpace(r.URL.Query().Get("address"))
 	if address == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(RiskResponse{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    "VALIDATION_ERROR",
-				Message: "addressパラメータは必須です",
-			},
+		response.WriteValidationError(w, []response.ErrorDetail{
+			{Field: "address", Message: "住所は必須です"},
 		})
 		return
 	}
 
-	// TODO: 実際のリスク検索ロジックを実装
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(RiskResponse{
-		Success: true,
-		Data: map[string]interface{}{
-			"address":      address,
-			"overall_risk": "medium",
-			"message":      "Coming soon...",
-		},
-	})
+	result, err := c.searchUseCase.Search(ctx, address)
+	if err != nil {
+		if strings.Contains(err.Error(), "geocode") || strings.Contains(err.Error(), "no results") {
+			response.WriteAddressNotFoundError(w)
+			return
+		}
+		response.WriteInternalError(w)
+		return
+	}
+
+	response.WriteSuccess(w, result)
 }
