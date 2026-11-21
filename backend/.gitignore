@@ -18,5 +18,9 @@ main
 coverage.out
 coverage.html
 
+# Log
+build-errors.log
+tmp/
+
 # Vendor (if not committing)
 # vendor/
