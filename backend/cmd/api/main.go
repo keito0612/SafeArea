@@ -14,16 +14,18 @@ import (
 	"github.com/go-chi/cors"
 
 	"github.com/isobekeito/safearea/internal/controller"
+	"github.com/isobekeito/safearea/internal/infrastructure/external"
 	"github.com/isobekeito/safearea/internal/infrastructure/persistence"
+	"github.com/isobekeito/safearea/internal/usecase"
 )
 
 var chiLambda *chiadapter.ChiLambda
 
-var routers = map[string]http.HandlerFunc{
-	"/health":    controller.HealthCheck,
-	"/risk":      controller.GetRisk,
-	"/disasters": controller.GetDisasters,
-}
+// Controllers
+var (
+	searchController    *controller.SearchController
+	disastersController *controller.DisastersController
+)
 
 func init() {
 	// Logger setup
@@ -31,8 +33,21 @@ func init() {
 	slog.SetDefault(logger)
 
 	// Database setup
-	if _, err := persistence.InitDB(); err != nil {
+	db, err := persistence.InitDB()
+	if err != nil {
 		slog.Error("Failed to initialize database", "error", err)
+	}
+
+	// DI setup
+	if db != nil {
+		geocodingClient := external.NewGeocodingClient()
+		disasterRepo := persistence.NewDisasterRepository(db)
+
+		searchUseCase := usecase.NewSearchUseCase(geocodingClient, disasterRepo)
+		disasterHistoryUseCase := usecase.NewDisasterHistoryUseCase(disasterRepo)
+
+		searchController = controller.NewSearchController(searchUseCase)
+		disastersController = controller.NewDisastersController(disasterHistoryUseCase)
 	}
 
 	// Router setup
@@ -55,22 +70,25 @@ func newRouter() *chi.Mux {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
+
 	// Routes
-	Route(r)
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/health", controller.HealthCheck)
+
+		if searchController != nil {
+			r.Get("/search", searchController.Search)
+		}
+		if disastersController != nil {
+			r.Get("/search/disasters", disastersController.GetDisasters)
+		}
+	})
+
 	return r
 }
 
 // Lambda handler
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	return chiLambda.ProxyWithContext(ctx, req)
-}
-
-func Route(r *chi.Mux) {
-	r.Route("/api", func(r chi.Router) {
-		for key, value := range routers {
-			r.Get(key, value)
-		}
-	})
 }
 
 func main() {
